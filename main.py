@@ -21,21 +21,32 @@ menu_bar.add_cascade(label="File", menu=file_menu)
 txt_area = tk.Text(root, wrap="word")
 txt_area.grid(row=0, column=0, rowspan=4, columnspan=2, sticky="nsew")
 
+#global variable for file path
+current_file = None
+
+#fucntion to save the note
 def save_note():
+    global current_file
     content = txt_area.get("1.0", tk.END)
     if content.strip() == "":
         messagebox.showwarning("Warning", "Note is empty!")
         return
+    if current_file:
+        with open(current_file, "w", encoding="utf-8") as file:
+            file.write(content)
+    else:
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text Files", "*.txt")] )
     
-    file_path = filedialog.asksaveasfilename(
-        defaultextension=".txt",
-        filetypes=[("Text Files", "*.txt")] )
-    
-    with open(file_path, "w", encoding="utf-8") as file:
-        file.write(content)
+        with open(file_path, "w", encoding="utf-8") as file:
+            file.write(content)
+
+        current_file = file_path
 
 
 def open_note():
+    global current_file
     file_path = filedialog.askopenfilename(
         filetypes=[("Text Files", ".txt")]
     )
@@ -45,10 +56,13 @@ def open_note():
             txt_area.delete("1.0", tk.END)
             txt_area.insert(tk.END, content)
 
+        current_file = file_path
+
 def new_note():
+    global current_file
     if messagebox.askyesno("Confirm", "Clear current note?"):
         txt_area.delete("1.0", tk.END)
-
+        current_file = None
 
 #making the File menu items
 file_menu.add_command(label="New | Ctrl + n", command=new_note)
